@@ -40,29 +40,34 @@ class Server:
         return self.__indexed_dataset
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
-        """Get the correct page from the dataset.
+        """Returns a dictionary with the following key-value pairs:
+        index: the current start index of the return page. That is the index
+        of the first item in the current page. For example if requesting page
+        3 with page_size 20, and no data was removed from the dataset, the
+        current index should be 60.
+        next_index: the next index to query with. That should be the index of
+        the first item after the last item on the current page.
+        page_size: the current page size
+        data: the actual page of the dataset
         """
         assert type(index) == int and type(page_size) == int
         assert 0 <= index < len(self.indexed_dataset())
-
-        indexed_dataset = self.indexed_dataset()
-        indexed_dataset_keys = list(indexed_dataset.keys())
+        assert page_size <= len(self.indexed_dataset())
 
         data = []
+        next_index = index + page_size
         i = index
-        while len(data) < page_size and i < len(indexed_dataset_keys):
-            if indexed_dataset_keys[i] in indexed_dataset:
-                data.append(indexed_dataset[indexed_dataset_keys[i]])
-            else:
-                page_size += 1
+        while i < next_index:
+            if i not in self.indexed_dataset():
+                next_index += 1
+                i += 1
+                continue
+            data.append(self.indexed_dataset()[i])
             i += 1
-
-        k = indexed_dataset_keys[i] if i < len(indexed_dataset_keys) else None
-        next_index = k
 
         return {
             'index': index,
-            'data': data,
+            'next_index': next_index,
             'page_size': page_size,
-            'next_index': next_index
+            'data': data
         }
