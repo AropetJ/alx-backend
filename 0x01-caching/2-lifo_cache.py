@@ -2,70 +2,76 @@
 """ LIFOCache module
 """
 from base_caching import BaseCaching
+from collections import OrderedDict
 
 
 class LIFOCache(BaseCaching):
-    class LIFOCache(BaseCaching):
+    """ LIFOCache defines:
+      - Caching system inherit from BaseCaching
+    """
+    def __init__(self):
+        """ Instantiation
         """
-        LIFOCache class that inherits from BaseCaching.
-        """
-
-        def __init__(self):
-            """
-            Initializes an instance of the LIFOCache class.
-            Args:
-                None
-            Returns:
-                None
-            """
-            super().__init__()
-            self.cache_data = {}
-            self.keys_freq = []
+        super().__init__()
+        self.cache_data = OrderedDict()
+        self.keys_freq = []
 
     def __reorder_items(self, mru_key):
-        """ Reorders the keys in self.keys_freq by frequency.
-        Args:
-            mru_key (str): Most recently used key.
-        Returns:
-                None
+        """ Reorder cache data
+        args:
+            key: key to reorder
         """
-        mru_freq = self.keys_freq[-1][1] + 1
-        ins_pos = next((i for i, (key, freq) in enumerate(
-            self.keys_freq) if key == mru_key), None)
-        if ins_pos is not None:
-            self.keys_freq.pop(ins_pos)
-        for i, (key, freq) in enumerate(self.keys_freq):
-            if freq > mru_freq:
-                ins_pos = i
+        max_positions = []
+        mru_freq = 0
+        mru_pos = 0
+        ins_pos = 0
+        for i, key_freq in enumerate(self.keys_freq):
+            if key_freq[0] == mru_key:
+                mru_freq = key_freq[1] + 1
+                mru_pos = i
                 break
-        self.keys_freq.insert(ins_pos, (mru_key, mru_freq))
+            elif len(max_positions) == 0:
+                max_positions.append(i)
+            elif key_freq[1] < self.keys_freq[max_positions[-1]][1]:
+                max_positions.append(i)
+        max_positions.reverse()
+        for pos in max_positions:
+            if self.keys_freq[pos][1] > mru_freq:
+                break
+            ins_pos = pos
+        self.keys_freq.pop(mru_pos)
+        self.keys_freq.insert(ins_pos, [mru_key, mru_freq])
 
     def put(self, key, item):
-        """ Adds an item to the cache.
-        Args:
-            key (str): Key of the item to add to the cache.
-            item (str): Value of the item to add to the cache.
-        Returns:
-            None
+        """ Add an item in the cache
+        args:
+            key: key to add
+            item: item to add
         """
+        if key is None or item is None:
+            return
         if key not in self.cache_data:
             if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
-                lfu_key, _ = self.keys_freq.pop(0)
+                lfu_key, _ = self.keys_freq[-1]
                 self.cache_data.pop(lfu_key)
+                self.keys_freq.pop()
                 print("DISCARD:", lfu_key)
             self.cache_data[key] = item
-            self.keys_freq.append((key, 0))
+            ins_index = len(self.keys_freq)
+            for i, key_freq in enumerate(self.keys_freq):
+                if key_freq[1] == 0:
+                    ins_index = i
+                    break
+            self.keys_freq.insert(ins_index, [key, 0])
         else:
             self.cache_data[key] = item
             self.__reorder_items(key)
 
     def get(self, key):
-        """ Retrieves an item from cache.
-        Args:
-            key (str): Key of the item to retrieve from the cache.
-        Returns:
-            Value of the requested item or None if key not found.
+        """ Get an item by key
+        args:
+            key: key to get
         """
-        if key in self.cache_data:
+        if key is not None and key in self.cache_data:
             self.__reorder_items(key)
         return self.cache_data.get(key, None)
