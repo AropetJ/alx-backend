@@ -5,12 +5,38 @@ from base_caching import BaseCaching
 
 
 class LIFOCache(BaseCaching):
-    def __init__(self):
-        super().__init__()
-        self.cache_data = {}
-        self.keys_freq = []
+    class LIFOCache(BaseCaching):
+        """
+        LIFOCache class that inherits from BaseCaching.
+        Args:
+            None
+        Attributes:
+            cache_data (dict): A dictionary to store key-value pairs.
+            keys_freq (list): A list to keep track of the keys in the
+            order of their frequency.
+        Methods:
+            __init__(): Initializes an instance of the LIFOCache class.
+        """
+
+        def __init__(self):
+            """
+            Initializes an instance of the LIFOCache class.
+            Args:
+                None
+            Returns:
+                None
+            """
+            super().__init__()
+            self.cache_data = {}
+            self.keys_freq = []
 
     def __reorder_items(self, mru_key):
+        """ Reorders the keys in self.keys_freq by frequency.
+        Args:
+            mru_key (str): Most recently used key.
+        Returns:
+                None
+        """
         mru_freq = self.keys_freq[-1][1] + 1
         ins_pos = next((i for i, (key, freq) in enumerate(
             self.keys_freq) if key == mru_key), None)
@@ -23,6 +49,13 @@ class LIFOCache(BaseCaching):
         self.keys_freq.insert(ins_pos, (mru_key, mru_freq))
 
     def put(self, key, item):
+        """ Adds an item to the cache.
+        Args:
+            key (str): Key of the item to add to the cache.
+            item (str): Value of the item to add to the cache.
+        Returns:
+            None
+        """
         if key not in self.cache_data:
             if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
                 lfu_key, _ = self.keys_freq.pop(0)
@@ -35,6 +68,12 @@ class LIFOCache(BaseCaching):
             self.__reorder_items(key)
 
     def get(self, key):
+        """ Retrieves an item from cache.
+        Args:
+            key (str): Key of the item to retrieve from the cache.
+        Returns:
+            Value of the requested item or None if key not found.
+        """
         if key in self.cache_data:
             self.__reorder_items(key)
         return self.cache_data.get(key, None)
