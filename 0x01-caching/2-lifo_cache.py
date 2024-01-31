@@ -8,14 +8,6 @@ class LIFOCache(BaseCaching):
     class LIFOCache(BaseCaching):
         """
         LIFOCache class that inherits from BaseCaching.
-        Args:
-            None
-        Attributes:
-            cache_data (dict): A dictionary to store key-value pairs.
-            keys_freq (list): A list to keep track of the keys in the
-            order of their frequency.
-        Methods:
-            __init__(): Initializes an instance of the LIFOCache class.
         """
 
         def __init__(self):
