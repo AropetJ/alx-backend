@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ LIFO Caching """
 from base_caching import BaseCaching
+from collections import OrderedDict
 
 
 class LIFOCache(BaseCaching):
@@ -15,6 +16,7 @@ class LIFOCache(BaseCaching):
         Initializes an instance of the LIFOCache class.
         """
         super().__init__()
+        self.cache_data = OrderedDict()
 
     def put(self, key, item):
         """
@@ -28,12 +30,12 @@ class LIFOCache(BaseCaching):
         if key is None or item is None:
             return
 
-        if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-            last_key = next(reversed(self.cache_data))
-            del self.cache_data[last_key]
-            print(f"DISCARD: {last_key}\n")
-
+        if key not in self.cache_data:
+            if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
+                last_key, _ = self.cache_data.popitem(True)
+                print("DISCARD:", last_key)
         self.cache_data[key] = item
+        self.cache_data.move_to_end(key, last=True)
 
     def get(self, key):
         """
@@ -44,7 +46,4 @@ class LIFOCache(BaseCaching):
             The value associated with the key, or None if the key is
             not found.
         """
-        if key is None or key not in self.cache_data:
-            return None
-
-        return self.cache_data[key]
+        return self.cache_data.get(key, None)
