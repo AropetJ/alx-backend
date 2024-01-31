@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 """This module defines the BasicCache class, which is a caching system that
 inherits from the BaseCaching class.
-It provides methods for putting items into the cache and retrieving items
-from the cache.
-Example:
-    cache = BasicCache()
-    cache.put('key', 'value')
-    result = cache.get('key')
-    print(result)  # Output: value
 """
 from base_caching import BaseCaching
 
 
 class BasicCache(BaseCaching):
+    """A basic caching system class
+    """
     def put(self, key, item):
         """Put an item into the cache.
         Args:
