@@ -13,6 +13,7 @@ users = {
     4: {"name": "Teletubby", "locale": None, "timezone": "Europe/London"},
 }
 
+
 class Config:
     """Flask Babel configuration.
     """
